@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Draw - CuriosityLab</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .draw-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .draw-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .draw-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .draw-controls {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--accent-teal);
+            height: fit-content;
+        }
+
+        .draw-canvas {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid var(--accent-teal);
+        }
+
+        .command-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .cmd-btn {
+            background: var(--bg-light);
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .cmd-btn:hover {
+            background: var(--accent-teal);
+            color: var(--bg-dark);
+            transform: scale(1.05);
+        }
+
+        #pathData {
+            width: 100%;
+            height: 100px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border: 1px solid var(--text-secondary);
+            border-radius: 5px;
+            padding: 0.5rem;
+            font-family: monospace;
+            margin: 1rem 0;
+        }
+
+        #previewSVG {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+        }
+
+        .point {
+            fill: var(--accent-red);
+            r: 4;
+        }
+
+        .property-group {
+            margin: 1rem 0;
+        }
+
+        .save-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--text-secondary);
+        }
+
+        .saved-drawings {
+            margin-top: 2rem;
+        }
+
+        .drawing-thumb {
+            background: var(--bg-light);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .drawing-thumb:hover {
+            transform: translateX(5px);
+            background: var(--accent-teal);
+            color: var(--bg-dark);
+        }
+
+        @media (max-width: 768px) {
+            .draw-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-flask"></i> 
+                <span>Curiosity</span>Lab
+            </div>
+            <div class="menu-toggle" id="menuToggle">☰</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="inventions.html">Inventions</a></li>
+                <li><a href="questions.html">Brain Triggers</a></li>
+                <li><a href="dashboard.html">My Notebook</a></li>
+                <li><a href="draw.html" class="active">Draw</a></li>
+                <li><a href="#" id="loginLink">Login</a></li>
+                <li><a href="#" id="logoutLink" style="display: none;">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="draw-container">
+            <div class="draw-header">
+                <h1 class="section-title">🎨 Science Visualizer</h1>
+                <div>
+                    <span id="userDisplay" style="color: var(--accent-teal);"></span>
+                </div>
+            </div>
+
+            <div class="draw-grid">
+                <div class="draw-controls">
+                    <h3 style="color: var(--accent-yellow);">🖌️ Drawing Tools</h3>
+                    
+                    <div class="command-buttons">
+                        <button class="cmd-btn" onclick="addCommand('M50,50')">M - Move</button>
+                        <button class="cmd-btn" onclick="addCommand('L100,100')">L - Line</button>
+                        <button class="cmd-btn" onclick="addCommand('H150')">H - Horizontal</button>
+                        <button class="cmd-btn" onclick="addCommand('V150')">V - Vertical</button>
+                        <button class="cmd-btn" onclick="addCommand('Z')">Z - Close</button>
+                        <button class="cmd-btn" onclick="addCommand('Q100,50 150,100')">Q - Curve</button>
+                        <button class="cmd-btn" onclick="addCommand('C80,30 120,170 200,100')">C - Cubic</button>
+                        <button class="cmd-btn" onclick="addCommand('A50,30 0 0,1 150,100')">A - Arc</button>
+                    </div>
+
+                    <label>Path Data:</label>
+                    <textarea id="pathData" placeholder="M50,50 L100,100">M50,50 L150,50 L150,150 L50,150 Z</textarea>
+                    
+                    <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
+                        <button class="btn-small" onclick="updatePath()">Update</button>
+                        <button class="btn-small" onclick="clearPath()">Clear</button>
+                    </div>
+
+                    <div class="property-group">
+                        <label>Fill Color:</label>
+                        <input type="color" id="fillColor" value="#4ecdc4" style="width: 100%;">
+                    </div>
+
+                    <div class="property-group">
+                        <label>Stroke Color:</label>
+                        <input type="color" id="strokeColor" value="#ff6b6b" style="width: 100%;">
+                    </div>
+
+                    <div class="property-group">
+                        <label>Stroke Width: <span id="widthValue">2</span></label>
+                        <input type="range" id="strokeWidth" min="1" max="10" value="2" style="width: 100%;">
+                    </div>
+
+                    <div class="save-section">
+                        <h4 style="color: var(--accent-teal);">💾 Save Drawing</h4>
+                        <input type="text" id="drawingTitle" placeholder="Drawing title..." style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem;">
+                        <button class="btn-primary" onclick="saveDrawing()">Save to Notebook</button>
+                    </div>
+                </div>
+
+                <div class="draw-canvas">
+                    <h3 style="color: var(--accent-yellow); margin-bottom: 1rem;">Preview:</h3>
+                    <svg id="previewSVG" width="100%" height="400" viewBox="0 0 400 300"></svg>
+                    
+                    <div class="saved-drawings" id="savedDrawings">
+                        <h4 style="color: var(--accent-teal); margin-top: 2rem;">📚 Saved Drawings</h4>
+                        <div id="drawingsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 CuriosityLab - Draw your discoveries</p>
+    </footer>
+
+    <script src="js/user-system.js"></script>
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePath();
+            loadSavedDrawings();
+            updateUserDisplay();
+        });
+
+        function updateUserDisplay() {
+            const display = document.getElementById('userDisplay');
+            if (userSystem.currentUser) {
+                display.innerHTML = `<i class="fas fa-user"></i> ${userSystem.currentUser.username}`;
+            } else {
+                display.innerHTML = '<a href="login.html" style="color: var(--accent-teal);">Login to save drawings</a>';
+            }
+        }
+
+        // Add command to path
+        function addCommand(command) {
+            const textarea = document.getElementById('pathData');
+            const current = textarea.value.trim();
+            textarea.value = current + (current ? ' ' : '') + command;
+            updatePath();
+        }
+
+        // Clear path
+        function clearPath() {
+            document.getElementById('pathData').value = '';
+            updatePath();
+        }
+
+        // Update SVG
+        function updatePath() {
+            const svg = document.getElementById('previewSVG');
+            svg.innerHTML = '';
+            
+            const pathData = document.getElementById('pathData').value;
+            const fillColor = document.getElementById('fillColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            const strokeWidth = document.getElementById('strokeWidth').value;
+            
+            document.getElementById('widthValue').textContent = strokeWidth;
+
+            if (!pathData.trim()) return;
+
+            try {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                path.setAttribute('fill', fillColor);
+                path.setAttribute('stroke', strokeColor);
+                path.setAttribute('stroke-width', strokeWidth);
+                
+                svg.appendChild(path);
+                addVisualGuides(svg, pathData);
+            } catch (e) {
+                console.log('Invalid path');
+            }
+        }
+
+        // Add visual guides (points)
+        function addVisualGuides(svg, pathData) {
+            const points = [];
+            const commands = pathData.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi);
+            
+            if (commands) {
+                let currentX = 0, currentY = 0;
+                
+                commands.forEach(cmd => {
+                    const type = cmd[0];
+                    const coords = cmd.substring(1).trim().split(/[,\s]+/).map(Number);
+                    
+                    switch(type) {
+                        case 'M':
+                        case 'L':
+                            if (coords.length >= 2) {
+                                points.push({x: coords[0], y: coords[1]});
+                                currentX = coords[0];
+                                currentY = coords[1];
+                            }
+                            break;
+                        case 'H':
+                            if (coords.length >= 1) {
+                                points.push({x: coords[0], y: currentY});
+                                currentX = coords[0];
+                            }
+                            break;
+                        case 'V':
+                            if (coords.length >= 1) {
+                                points.push({x: currentX, y: coords[0]});
+                                currentY = coords[0];
+                            }
+                            break;
+                    }
+                });
+                
+                points.forEach(point => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', point.x);
+                    circle.setAttribute('cy', point.y);
+                    circle.setAttribute('r', '4');
+                    circle.setAttribute('fill', '#ff6b6b');
+                    circle.setAttribute('class', 'point');
+                    svg.appendChild(circle);
+                });
+            }
+        }
+
+        // Save drawing to user's notebook
+        function saveDrawing() {
+            if (!userSystem.currentUser) {
+                alert('Please login to save drawings');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const title = document.getElementById('drawingTitle').value.trim() || 'Untitled Drawing';
+            const pathData = document.getElementById('pathData').value;
+            const fillColor = document.getElementById('fillColor').value;
+            const strokeColor = document.getElementById('strokeColor').value;
+            const strokeWidth = document.getElementById('strokeWidth').value;
+
+            if (!pathData.trim()) {
+                alert('Create a drawing first!');
+                return;
+            }
+
+            const drawing = {
+                id: 'draw_' + Date.now(),
+                title: title,
+                pathData: pathData,
+                fillColor: fillColor,
+                strokeColor: strokeColor,
+                strokeWidth: strokeWidth,
+                date: new Date().toISOString()
+            };
+
+            // Get existing drawings
+            const drawingsKey = `${userSystem.currentUser.userId}_drawings`;
+            let drawings = JSON.parse(localStorage.getItem(drawingsKey) || '[]');
+            drawings.unshift(drawing);
+            localStorage.setItem(drawingsKey, JSON.stringify(drawings));
+
+            // Also save as a note in notebook
+            userSystem.addPrivateNote(
+                userSystem.currentUser.userId,
+                `🎨 Drawing: ${title}\nPath: ${pathData}`,
+                'visual'
+            );
+
+            alert('✅ Drawing saved!');
+            document.getElementById('drawingTitle').value = '';
+            loadSavedDrawings();
+        }
+
+        // Load saved drawings
+        function loadSavedDrawings() {
+            const listDiv = document.getElementById('drawingsList');
+            
+            if (!userSystem.currentUser) {
+                listDiv.innerHTML = '<p style="color: var(--text-secondary);">Login to see your saved drawings</p>';
+                return;
+            }
+
+            const drawingsKey = `${userSystem.currentUser.userId}_drawings`;
+            let drawings = JSON.parse(localStorage.getItem(drawingsKey) || '[]');
+
+            if (drawings.length === 0) {
+                listDiv.innerHTML = '<p style="color: var(--text-secondary);">No saved drawings yet</p>';
+                return;
+            }
+
+            let html = '';
+            drawings.slice(0, 5).forEach(drawing => {
+                const date = new Date(drawing.date).toLocaleDateString();
+                html += `
+                    <div class="drawing-thumb" onclick="loadDrawing('${drawing.id}')">
+                        <strong>${drawing.title}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${date}</div>
+                    </div>
+                `;
+            });
+
+            listDiv.innerHTML = html;
+        }
+
+        // Load a saved drawing
+        function loadDrawing(drawingId) {
+            if (!userSystem.currentUser) return;
+
+            const drawingsKey = `${userSystem.currentUser.userId}_drawings`;
+            let drawings = JSON.parse(localStorage.getItem(drawingsKey) || '[]');
+            const drawing = drawings.find(d => d.id === drawingId);
+
+            if (drawing) {
+                document.getElementById('pathData').value = drawing.pathData;
+                document.getElementById('fillColor').value = drawing.fillColor;
+                document.getElementById('strokeColor').value = drawing.strokeColor;
+                document.getElementById('strokeWidth').value = drawing.strokeWidth;
+                updatePath();
+            }
+        }
+
+        // Event listeners
+        document.getElementById('fillColor').addEventListener('input', updatePath);
+        document.getElementById('strokeColor').addEventListener('input', updatePath);
+        document.getElementById('strokeWidth').addEventListener('input', updatePath);
+        document.getElementById('pathData').addEventListener('input', updatePath);
+
+        // Mobile menu
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+
+        // Update on login/logout
+        window.addEventListener('storage', function() {
+            updateUserDisplay();
+            loadSavedDrawings();
+        });
+    </script>
+</body>
+  </html>
