@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CuriosityLab - Science Community</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-flask"></i> 
+                <span>Curiosity</span>Lab
+            </div>
+            
+            <div class="menu-toggle" id="menuToggle">☰</div>
+            
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="inventions.html">Inventions</a></li>
+                <li><a href="questions.html">Brain Triggers</a></li>
+                <li><a href="dashboard.html" id="dashboardLink">My Notebook</a></li>
+                <li><a href="login.html" id="loginLink">Login</a></li>
+                <li><a href="signup.html" id="signupLink" class="btn-signup">Sign Up</a></li>
+                <li><a href="#" id="logoutLink" style="display: none;">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section with Animation -->
+        <section class="hero animate-fade-in">
+            <h1 class="animate-slide-down">🔬 Where Scientists Share Discoveries</h1>
+            <p class="hero-subtitle animate-slide-up">Join thousands of minds exploring the universe</p>
+            
+            <div class="daily-trigger-card animate-pulse">
+                <div class="trigger-label">🧠 TODAY'S BRAIN TRIGGER</div>
+                <p class="trigger-question" id="dailyQuestion">Loading...</p>
+                <button class="btn-small" id="newTriggerBtn">🔄 New Trigger</button>
+            </div>
+        </section>
+
+        <!-- Public Feed Section -->
+        <section class="feed-section animate-fade-in">
+            <div class="feed-header">
+                <h2 class="section-title">🌍 Latest Public Discoveries</h2>
+                <div class="feed-filters">
+                    <button class="filter-btn active" data-filter="latest">Latest</button>
+                    <button class="filter-btn" data-filter="popular">🔥 Popular</button>
+                </div>
+            </div>
+
+            <div id="publicFeed" class="feed-container">
+                <!-- Posts will load here -->
+                <div class="loading-spinner">Loading discoveries...</div>
+            </div>
+        </section>
+
+        <!-- Science Categories -->
+        <section class="categories-section animate-fade-in">
+            <h2 class="section-title">Explore Science</h2>
+            <div class="category-grid">
+                <a href="history.html" class="category-card history">
+                    <span class="category-emoji">📜</span>
+                    <h3>Scientific History</h3>
+                    <p>Moments that changed everything</p>
+                </a>
+                
+                <a href="inventions.html" class="category-card inventions">
+                    <span class="category-emoji">💡</span>
+                    <h3>Mind-Blowing Inventions</h3>
+                    <p>Ideas that shaped our world</p>
+                </a>
+                
+                <a href="questions.html" class="category-card questions">
+                    <span class="category-emoji">🤔</span>
+                    <h3>Brain Triggers</h3>
+                    <p>Questions that make you think</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 CuriosityLab - Every discovery starts with curiosity</p>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/user-system.js"></script>
+    <script src="js/main.js"></script>
+</body>
+  </html>
