@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notebook - CuriosityLab</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-purple));
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--accent-teal);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+
+        .new-note-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 2px dashed var(--accent-teal);
+        }
+
+        .notes-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .note-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-yellow);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .note-card.private {
+            border-left-color: var(--accent-red);
+        }
+
+        .note-card.public {
+            border-left-color: var(--accent-teal);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .note-category {
+            background: var(--bg-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .note-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .note-action-btn:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .share-btn {
+            background: var(--accent-teal);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+            background: #6bdbd2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-flask"></i> 
+                <span>Curiosity</span>Lab
+            </div>
+            <div class="menu-toggle" id="menuToggle">☰</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="inventions.html">Inventions</a></li>
+                <li><a href="questions.html">Brain Triggers</a></li>
+                <li><a href="dashboard.html" class="active">My Notebook</a></li>
+                <li><a href="#" id="logoutLink">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="dashboard-container">
+            <div class="welcome-card" id="welcomeCard">
+                <h1 style="color: white;">📓 Loading...</h1>
+                <p style="color: rgba(255,255,255,0.9);">Your personal science notebook</p>
+            </div>
+
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="new-note-card">
+                <h3 style="color: var(--accent-teal); margin-bottom: 1rem;">✨ New Observation</h3>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="noteCategory">
+                        <option value="general">🔬 General Science</option>
+                        <option value="physics">⚡ Physics</option>
+                        <option value="biology">🧬 Biology</option>
+                        <option value="chemistry">🧪 Chemistry</option>
+                        <option value="astronomy">🌌 Astronomy</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Observation</label>
+                    <textarea id="noteContent" placeholder="Write your scientific thought, observation, or question..." rows="4"></textarea>
+                </div>
+                <button class="btn-primary" onclick="addNote()">
+                    <i class="fas fa-save"></i> Save to Notebook
+                </button>
+            </div>
+
+            <h2 style="color: var(--accent-yellow); margin: 2rem 0 1rem;">📚 My Notes</h2>
+            <div id="notesContainer" class="notes-grid">
+                <div class="loading-spinner">Loading your notes...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeShareModal()">&times;</span>
+            <h3 style="color: var(--accent-teal);">🌍 Share to Public</h3>
+            <p style="margin: 1rem 0;">Share this observation with the community?</p>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-primary" onclick="confirmShare()">Yes, Share Publicly</button>
+                <button class="btn-small" onclick="closeShareModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 CuriosityLab - Every discovery starts with curiosity</p>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/user-system.js"></script>
+    <script>
+        let currentNoteId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!userSystem.currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            updateDashboard();
+            loadNotes();
+        });
+
+        function updateDashboard() {
+            const user = userSystem.currentUser;
+            const welcomeCard = document.getElementById('welcomeCard');
+            welcomeCard.innerHTML = `
+                <h1 style="color: white;">🔬 Welcome, ${user.username}!</h1>
+                <p style="color: rgba(255,255,255,0.9);">Your personal science notebook</p>
+                <p style="color: rgba(255,255,255,0.7); margin-top: 1rem;">Member since: ${new Date(user.joined).toLocaleDateString()}</p>
+            `;
+
+            const notes = userSystem.getPrivateNotes(user.userId);
+            const publicPosts = userSystem.getUserPublicPosts(user.userId);
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <span class="stat-number">${notes.length}</span>
+                    <span>Private Notes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">${publicPosts.length}</span>
+                    <span>Public Posts</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">${notes.length + publicPosts.length}</span>
+                    <span>Total</span>
+                </div>
+            `;
+        }
+
+        function loadNotes() {
+            const user = userSystem.currentUser;
+            const notes = userSystem.getPrivateNotes(user.userId);
+            const container = document.getElementById('notesContainer');
+
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 3rem;">📓</span>
+                        <h3>No notes yet</h3>
+                        <p>Start your first scientific observation above!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            notes.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(note => {
+                const date = new Date(note.date).toLocaleDateString();
+                const categoryIcons = {
+                    general: '🔬',
+                    physics: '⚡',
+                    biology: '🧬',
+                    chemistry: '🧪',
+                    astronomy: '🌌'
+                };
+                
+                html += `
+                    <div class="note-card private" data-note-id="${note.id}">
+                        <div class="note-header">
+                            <span class="note-category">${categoryIcons[note.category] || '🔬'} ${note.category}</span>
+                            <div class="note-actions">
+                                <button class="note-action-btn" onclick="shareNote('${note.id}')" title="Share publicly">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                                <button class="note-action-btn" onclick="deleteNote('${note.id}')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p style="margin: 1rem 0;">${note.content}</p>
+                        <div style="color: var(--text-secondary); font-size: 0.8rem;">
+                            <i class="far fa-clock"></i> ${date}
+                            <span style="margin-left: 1rem;"><i class="fas fa-lock"></i> Private</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function addNote() {
+            const category = document.getElementById('noteCategory').value;
+            const content = document.getElementById('noteContent').value.trim();
+
+            if (!content) {
+                alert('Please write something!');
+                return;
+            }
+
+            const user = userSystem.currentUser;
+            userSystem.addPrivateNote(user.userId, content, category);
+            
+            document.getElementById('noteContent').value = '';
+            loadNotes();
+            updateDashboard();
+            
+            // Show success animation
+            const noteCard = document.querySelector('.new-note-card');
+            noteCard.style.animation = 'pulse 0.5s';
+            setTimeout(() => {
+                noteCard.style.animation = '';
+            }, 500);
+        }
+
+        function shareNote(noteId) {
+            currentNoteId = noteId;
+            document.getElementById('shareModal').style.display = 'block';
+        }
+
+        function confirmShare() {
+            const user = userSystem.currentUser;
+            const notes = userSystem.getPrivateNotes(user.userId);
+            const note = notes.find(n => n.id === currentNoteId);
+
+            if (note) {
+                userSystem.shareToPublic(user.userId, note.id, note.content);
+                loadNotes();
+                updateDashboard();
+                
+                // Show success message
+                alert('✨ Posted to public feed!');
+            }
+
+            closeShareModal();
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+            currentNoteId = null;
+        }
+
+        function deleteNote(noteId) {
+            if (confirm('Delete this note?')) {
+                const user = userSystem.currentUser;
+                userSystem.deletePrivateNote(user.userId, noteId);
+                loadNotes();
+                updateDashboard();
+            }
+        }
+    </script>
+</body>
+      </html>
